@@ -675,12 +675,49 @@ a:hover {
 
 /* Responsive */
 @media (max-width: 600px) {
+    html {
+        font-size: 17px;
+        /* Bump base font size for mobile */
+    }
+
     .regular-mode {
-        padding: 3rem 1rem;
+        padding: 0 1.25rem 3rem 1.25rem;
+        /* Tighter padding for mobile */
+    }
+
+    .terminal-wrapper,
+    .terminal-btn {
+        display: none !important;
+        /* Hide terminal option on mobile */
+    }
+
+    .header-full {
+        padding: 4rem 0 1rem 0;
+        /* Reduced padding for mobile header */
+    }
+
+    .header-content-wrapper {
+        padding: 0 1.25rem;
     }
 
     .header h1 {
-        font-size: 1.5rem;
+        font-size: 2rem;
+        /* Increased from 1.5rem */
+    }
+
+    /* Split subtitle lines */
+    .separator {
+        display: none;
+    }
+
+    .degree,
+    .university {
+        display: block;
+        line-height: 1.4;
+    }
+
+    .university {
+        margin-top: 0.25rem;
     }
 
     .header-top {
@@ -688,8 +725,9 @@ a:hover {
     }
 
     .profile-picture {
-        width: 70px;
-        height: 70px;
+        width: 120px;
+        /* Increased from 70px/100px */
+        height: 120px;
     }
 
     .entry-header {
