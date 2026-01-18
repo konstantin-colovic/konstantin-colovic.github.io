@@ -6,19 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
         content="Konstantin Čolović - B.Sc. Information Engineering student at Technical University of Munich">
-    <title>Konstantin Čolović</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Konstantin Čolović - CV</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 
 <body>
+    <!-- Welcome Overlay -->
+    <div id="welcome-overlay" class="welcome-overlay">
+        <h1 class="welcome-text">Welcome <span id="welcome-name"></span></h1>
+    </div>
     <!-- Controls -->
     <div class="controls">
         <button type="button" id="logout-btn" class="control-btn logout-btn" aria-label="Logout" title="Logout"
@@ -56,29 +60,34 @@
         </div>
     </div>
 
+    <!-- Full Width Header -->
+    <header class="header header-full">
+        <div class="regular-mode header-content-wrapper">
+            <div class="header-top">
+                <img src="profile.png" alt="Konstantin Čolović" class="profile-picture">
+                <h1>Konstantin Čolović</h1>
+            </div>
+            <p class="subtitle">B.Sc. Information Engineering @ <a href="https://www.tum.de" target="_blank"
+                    rel="noopener">Technical University of Munich</a></p>
+            <p class="location">Belgrade, Serbia · Heilbronn, Germany</p>
+
+            <!-- Public LinkedIn -->
+            <p class="public-link">
+                <a href="https://www.linkedin.com/in/konstantin-colovic/" target="_blank" rel="noopener">
+                    <svg class="linkedin-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                    LinkedIn
+                </a>
+            </p>
+        </div>
+    </header>
+
     <!-- Regular Mode -->
     <main id="regular-mode" class="regular-mode">
         <div class="container">
-            <header class="header">
-                <div class="header-top">
-                    <img src="profile.png" alt="Konstantin Čolović" class="profile-picture">
-                    <h1>Konstantin Čolović</h1>
-                </div>
-                <p class="subtitle">B.Sc. Information Engineering @ <a href="https://www.tum.de" target="_blank"
-                        rel="noopener">Technical University of Munich</a></p>
-                <p class="location">Belgrade, Serbia · Heilbronn, Germany</p>
 
-                <!-- Public LinkedIn -->
-                <p class="public-link">
-                    <a href="https://www.linkedin.com/in/konstantincolovic" target="_blank" rel="noopener">
-                        <svg class="linkedin-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                            <path
-                                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                        </svg>
-                        LinkedIn
-                    </a>
-                </p>
-            </header>
 
             <!-- Login prompt for unauthenticated users -->
             <div id="login-prompt" class="login-prompt">
@@ -101,8 +110,6 @@
                                 class="contact-label">(Personal)</span></li>
                         <li><a href="mailto:konstantin.colovic@tum.de">konstantin.colovic@tum.de</a> <span
                                 class="contact-label">(University)</span></li>
-                        <li><a href="https://www.linkedin.com/in/konstantincolovic" target="_blank"
-                                rel="noopener">LinkedIn</a></li>
                     </ul>
                 </section>
 

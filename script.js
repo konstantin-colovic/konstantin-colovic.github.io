@@ -13,6 +13,9 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const githubProvider = new firebase.auth.GithubAuthProvider();
 
+// Set persistence to local (survives browser close)
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
 // Auth state
 let isAuthenticated = false;
 
@@ -22,14 +25,41 @@ const protectedContent = document.getElementById('protected-content');
 const protectedControl = document.querySelector('.protected-control');
 const loginBtn = document.getElementById('github-login-btn');
 const logoutBtn = document.getElementById('logout-btn');
+const welcomeOverlay = document.getElementById('welcome-overlay');
+const welcomeNameSpan = document.getElementById('welcome-name');
+
+// Check for recruiter bypass token
+const urlParams = new URLSearchParams(window.location.search);
+const isRecruiter = urlParams.get('access') === 'recruiter_view';
+
+if (isRecruiter) {
+    console.log('Recruiter access granted');
+    isAuthenticated = true;
+    showWelcomeOverlay('Recruiter');
+}
+
+// Show welcome animation
+function showWelcomeOverlay(name) {
+    if (!welcomeOverlay || !welcomeNameSpan) return;
+
+    welcomeNameSpan.textContent = name;
+    welcomeOverlay.classList.add('active');
+
+    // Hold for 1.5s then fade out
+    setTimeout(() => {
+        welcomeOverlay.classList.remove('active');
+    }, 1500);
+}
 
 // GitHub Login
 loginBtn?.addEventListener('click', async () => {
     try {
-        await auth.signInWithPopup(githubProvider);
+        const result = await auth.signInWithPopup(githubProvider);
+        console.log('Login successful:', result.user.displayName);
+        showWelcomeOverlay(result.user.displayName || result.user.email || 'Visitor');
     } catch (error) {
         console.error('Login error:', error);
-        alert('Login failed. Please try again.');
+        alert('Login failed: ' + error.message);
     }
 });
 
@@ -37,6 +67,9 @@ loginBtn?.addEventListener('click', async () => {
 logoutBtn?.addEventListener('click', async () => {
     try {
         await auth.signOut();
+        if (isRecruiter) {
+            window.location.href = window.location.pathname;
+        }
     } catch (error) {
         console.error('Logout error:', error);
     }
@@ -44,16 +77,29 @@ logoutBtn?.addEventListener('click', async () => {
 
 // Auth state observer
 auth.onAuthStateChanged((user) => {
-    isAuthenticated = !!user;
-    updateUIForAuthState(user);
+    console.log('Auth state changed:', user ? user.email : 'signed out');
+
+    // If recruiter token is present, we already handled it, but auth state might be null
+    if (isRecruiter) {
+        isAuthenticated = true;
+        updateUIForAuthState({ displayName: 'Recruiter' });
+    } else {
+        isAuthenticated = !!user;
+        updateUIForAuthState(user);
+
+        // If user just loaded the page and is already logged in, show welcome?
+        // Maybe only on first load? Current logic doesn't distinguish session restore vs login.
+        // Let's refrain from enforcing it on restore to avoid annoyance.
+    }
 });
 
 function updateUIForAuthState(user) {
-    if (user) {
+    if (isAuthenticated) {
         // User is logged in - show protected content
         if (loginPrompt) loginPrompt.style.display = 'none';
         if (protectedContent) protectedContent.style.display = 'block';
         if (protectedControl) protectedControl.style.display = 'flex';
+        // Only show logout if actually logged in via firebase, or maybe also for recruiter to "exit"
         if (logoutBtn) logoutBtn.style.display = 'flex';
     } else {
         // User is logged out - hide protected content
@@ -69,12 +115,13 @@ function updateUIForAuthState(user) {
     }
 }
 
+
 // CV Data
 const cvData = {
     contact: {
         personal: 'konstantin.colovic@gmail.com',
         university: 'konstantin.colovic@tum.de',
-        linkedin: 'linkedin.com/in/konstantincolovic',
+        linkedin: 'linkedin.com/in/konstantin-colovic/',
         location: 'Belgrade, Serbia | Heilbronn, Germany'
     },
     experience: [
