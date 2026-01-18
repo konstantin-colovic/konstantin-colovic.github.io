@@ -1,3 +1,74 @@
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyATgwkCYjpu9YymA-TPTyex6zJI2hxu-TU",
+    authDomain: "github-cv-8c0be.firebaseapp.com",
+    projectId: "github-cv-8c0be",
+    storageBucket: "github-cv-8c0be.firebasestorage.app",
+    messagingSenderId: "392213575137",
+    appId: "1:392213575137:web:3cd62d928c6c09ea6acea0"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const githubProvider = new firebase.auth.GithubAuthProvider();
+
+// Auth state
+let isAuthenticated = false;
+
+// Auth DOM elements
+const loginPrompt = document.getElementById('login-prompt');
+const protectedContent = document.getElementById('protected-content');
+const protectedControl = document.querySelector('.protected-control');
+const loginBtn = document.getElementById('github-login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+
+// GitHub Login
+loginBtn?.addEventListener('click', async () => {
+    try {
+        await auth.signInWithPopup(githubProvider);
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed. Please try again.');
+    }
+});
+
+// Logout
+logoutBtn?.addEventListener('click', async () => {
+    try {
+        await auth.signOut();
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+});
+
+// Auth state observer
+auth.onAuthStateChanged((user) => {
+    isAuthenticated = !!user;
+    updateUIForAuthState(user);
+});
+
+function updateUIForAuthState(user) {
+    if (user) {
+        // User is logged in - show protected content
+        if (loginPrompt) loginPrompt.style.display = 'none';
+        if (protectedContent) protectedContent.style.display = 'block';
+        if (protectedControl) protectedControl.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'flex';
+    } else {
+        // User is logged out - hide protected content
+        if (loginPrompt) loginPrompt.style.display = 'block';
+        if (protectedContent) protectedContent.style.display = 'none';
+        if (protectedControl) protectedControl.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+
+        // Close terminal if open
+        if (typeof closeTerminal === 'function' && isTerminalMode) {
+            closeTerminal();
+        }
+    }
+}
+
 // CV Data
 const cvData = {
     contact: {
@@ -80,6 +151,7 @@ const modeToggle = document.getElementById('mode-toggle');
 const themeToggle = document.getElementById('theme-toggle');
 const terminalMode = document.getElementById('terminal-mode');
 const terminalWindow = document.querySelector('.terminal-window');
+const terminalHeader = document.querySelector('.terminal-header');
 const terminalOutput = document.getElementById('terminal-output');
 const tooltip = document.getElementById('tooltip');
 const redDot = document.querySelector('.terminal-dot.red');
@@ -156,8 +228,123 @@ function toggleFullscreen() {
     terminalWindow.classList.toggle('fullscreen', isFullscreen);
 }
 
+// Drag functionality
+let isDragging = false;
+let dragOffset = { x: 0, y: 0 };
+
+terminalHeader.addEventListener('mousedown', (e) => {
+    // Don't drag if clicking on dots
+    if (e.target.classList.contains('terminal-dot')) return;
+    if (isFullscreen) return;
+
+    isDragging = true;
+    terminalWindow.classList.add('dragging');
+
+    const rect = terminalWindow.getBoundingClientRect();
+    dragOffset.x = e.clientX - rect.left;
+    dragOffset.y = e.clientY - rect.top;
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    const x = e.clientX - dragOffset.x;
+    const y = e.clientY - dragOffset.y;
+
+    // Keep within viewport bounds
+    const maxX = window.innerWidth - terminalWindow.offsetWidth;
+    const maxY = window.innerHeight - terminalWindow.offsetHeight;
+
+    terminalWindow.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+    terminalWindow.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        terminalWindow.classList.remove('dragging');
+    }
+    if (isResizing) {
+        isResizing = false;
+        resizeDirection = null;
+        terminalWindow.classList.remove('resizing');
+    }
+});
+
+// Resize functionality
+let isResizing = false;
+let resizeDirection = null;
+let resizeStart = { x: 0, y: 0, width: 0, height: 0, left: 0, top: 0 };
+
+document.querySelectorAll('.resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', (e) => {
+        if (isFullscreen) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        isResizing = true;
+        terminalWindow.classList.add('resizing');
+
+        // Get direction from class name
+        const classes = handle.className.split(' ');
+        resizeDirection = classes.find(c => c.startsWith('resize-') && c !== 'resize-handle')?.replace('resize-', '');
+
+        const rect = terminalWindow.getBoundingClientRect();
+        resizeStart = {
+            x: e.clientX,
+            y: e.clientY,
+            width: rect.width,
+            height: rect.height,
+            left: rect.left,
+            top: rect.top
+        };
+    });
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isResizing || !resizeDirection) return;
+
+    const dx = e.clientX - resizeStart.x;
+    const dy = e.clientY - resizeStart.y;
+
+    let newWidth = resizeStart.width;
+    let newHeight = resizeStart.height;
+    let newLeft = resizeStart.left;
+    let newTop = resizeStart.top;
+
+    // Handle each direction
+    if (resizeDirection.includes('e')) {
+        newWidth = Math.max(400, resizeStart.width + dx);
+    }
+    if (resizeDirection.includes('w')) {
+        const possibleWidth = resizeStart.width - dx;
+        if (possibleWidth >= 400) {
+            newWidth = possibleWidth;
+            newLeft = resizeStart.left + dx;
+        }
+    }
+    if (resizeDirection.includes('s')) {
+        newHeight = Math.max(300, resizeStart.height + dy);
+    }
+    if (resizeDirection.includes('n')) {
+        const possibleHeight = resizeStart.height - dy;
+        if (possibleHeight >= 300) {
+            newHeight = possibleHeight;
+            newTop = resizeStart.top + dy;
+        }
+    }
+
+    terminalWindow.style.width = newWidth + 'px';
+    terminalWindow.style.height = newHeight + 'px';
+    terminalWindow.style.left = newLeft + 'px';
+    terminalWindow.style.top = newTop + 'px';
+});
+
 // Mode Toggle
 modeToggle.addEventListener('click', () => {
+    // Don't allow terminal if not authenticated
+    if (!isAuthenticated) return;
+
     if (tooltip && !tooltip.classList.contains('hidden')) {
         tooltip.classList.add('hidden');
     }
@@ -178,6 +365,12 @@ function openTerminal() {
     terminalMode.classList.add('visible');
     modeToggle.classList.add('terminal-active');
     modeToggle.querySelector('.toggle-text').textContent = 'Close';
+
+    // Center the terminal window
+    const winWidth = terminalWindow.offsetWidth;
+    const winHeight = terminalWindow.offsetHeight;
+    terminalWindow.style.left = (window.innerWidth - winWidth) / 2 + 'px';
+    terminalWindow.style.top = (window.innerHeight - winHeight) / 2 + 'px';
 
     // Blur the button so Enter key doesn't activate it
     modeToggle.blur();
